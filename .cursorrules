@@ -1,0 +1,95 @@
+# Chta - CLI Cheat Sheet Tool
+# Go-based CLI application for managing and sharing command cheat sheets
+
+## Project Overview
+- **Name**: Chta (like Cheetah - fast CLI cheat sheet tool)
+- **Language**: Go
+- **Type**: CLI application
+- **Goal**: Easy-to-use cheat sheet manager for CLI tools
+
+## Go Standards & Best Practices
+
+### Code Style
+- Follow standard Go formatting (`gofmt`, `goimports`)
+- Use meaningful variable and function names
+- Keep functions small and focused (max 50 lines preferred)
+- Use Go naming conventions (camelCase for private, PascalCase for public)
+- Add comments for exported functions and types
+
+### Error Handling
+- Always handle errors explicitly
+- Use `fmt.Errorf` for wrapping errors with context
+- Prefer returning errors over panicking
+- Use meaningful error messages that help users understand what went wrong
+
+### CLI Structure
+- Use `cobra` for command structure and argument parsing
+- Keep command definitions in separate files under `cmd/` directory
+- Use `viper` for configuration management
+- Implement `--help` and `--version` flags for all commands
+
+### File Organization
+```
+chta/
+├── cmd/           # CLI command definitions
+├── internal/      # Private application code
+│   ├── config/    # Configuration handling
+│   ├── storage/   # Local file management
+│   ├── remote/    # Remote cheat sheet fetching
+│   └── display/   # Output formatting and display
+├── examples/      # Built-in cheat sheets
+├── main.go        # Entry point
+├── go.mod         # Go module definition
+└── README.md      # Documentation
+```
+
+### Dependencies
+- **CLI**: `github.com/spf13/cobra` and `github.com/spf13/viper`
+- **Display**: `github.com/charmbracelet/glamour` for markdown rendering
+- **Search**: `github.com/junegunn/fzf` integration or similar fuzzy search
+- **HTTP**: Standard library `net/http` for fetching remote sheets
+- **Testing**: Standard library `testing` package
+
+### Code Guidelines
+- Write tests for core functionality
+- Use interfaces for testability (especially for file I/O and HTTP)
+- Keep main.go minimal - delegate to cmd package
+- Use context.Context for operations that might be cancelled
+- Handle SIGINT gracefully for interactive commands
+
+### Git & Development
+- Use conventional commits (feat:, fix:, docs:, etc.)
+- Keep commits atomic and focused
+- Write descriptive commit messages
+- Create issues for features and bugs on GitHub
+
+### Performance Considerations
+- Minimize startup time (important for CLI tools)
+- Cache frequently accessed data when appropriate
+- Use streaming for large file operations
+- Profile memory usage for cheat sheet parsing
+
+### User Experience
+- Provide clear, helpful error messages
+- Support both interactive and non-interactive modes
+- Follow Unix philosophy (do one thing well)
+- Make commands intuitive and memorable
+- Support piping and shell integration
+
+### Configuration
+- Support XDG Base Directory specification
+- Allow override via environment variables
+- Provide sensible defaults
+- Keep config file format simple (YAML or TOML)
+
+### Documentation
+- Maintain up-to-date README with examples
+- Document all exported functions and types
+- Include usage examples in command help
+- Create man pages for installation
+
+## Security
+- Validate all user inputs
+- Sanitize file paths to prevent directory traversal
+- Be cautious with remote content execution
+- Use HTTPS for remote cheat sheet fetching 
