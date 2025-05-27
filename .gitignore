@@ -36,5 +36,4 @@ Thumbs.db
 
 # Local configuration
 .env
-.env.local 
-.cursorrules
+.env.local
