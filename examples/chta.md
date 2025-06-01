@@ -1,93 +1,50 @@
-# Chta - CLI Cheat Sheet Tool 🐆
+# Chta - Fast CLI Cheat Sheets 🐆
 
-*Fast like a cheetah, helpful like a cheat sheet*
+*Quick reference and command execution for everyone*
 
-## Basic Usage
-
-```bash
-# Show this cheat sheet
-chta chta
-
-# Show interactive browser (coming soon)
-chta
-
-# Show specific cheat sheet
-chta git
-chta docker
-chta fzf
-```
-
-## Managing Cheat Sheets
+## View Cheat Sheets
 
 ```bash
-# List all available cheat sheets
-chta list
-
-# Add a new cheat sheet
-chta add <tool-name>
-
-# Edit existing cheat sheet
-chta edit <tool-name>
-
-# Remove a cheat sheet
-chta remove <tool-name>
+chta git                    # View Git cheat sheet
+chta docker                 # View Docker cheat sheet  
+chta chta                   # View this cheat sheet
+chta list                   # List all available sheets
 ```
 
-## Remote Cheat Sheets
+## Execute Commands Interactively
 
 ```bash
-# Fetch cheat sheet from URL
-chta fetch <url> <tool-name>
-
-# Publish your cheat sheet (coming soon)
-chta publish <tool-name>
-
-# Search community cheat sheets (coming soon)
-chta search <keyword>
+chta run git                # Pick and run Git commands
+chta run docker             # Pick and run Docker commands
+chta run git --dry-run      # Preview commands safely
 ```
 
-## Configuration
+## Adding Your Own
 
 ```bash
-# Show current configuration
-chta config
+# Create new cheat sheet
+echo "# My Tool\n\n\`\`\`bash\nmytool --help\n\`\`\`" > examples/mytool.md
 
-# Set default editor
-chta config set editor vim
-
-# Set storage location
-chta config set storage ~/.local/share/chta
+# Use it
+chta mytool
+chta run mytool
 ```
 
-## Tips & Tricks
+## How Interactive Run Works
 
-- **Self-documenting**: This cheat sheet documents Chta itself!
-- **Markdown format**: All cheat sheets use standard Markdown
-- **Built-in examples**: Start with `git`, `docker`, `fzf` examples
-- **Fast search**: Use fuzzy finding to quickly locate commands
-- **Shareable**: Export and share your cheat sheets with team
+1. **Extract** - Finds executable commands in markdown code blocks
+2. **Display** - Shows numbered list of commands with descriptions  
+3. **Select** - User picks a number (1, 2, 3...)
+4. **Confirm** - Asks "Continue? (y/N)" for safety
+5. **Execute** - Runs the command in your shell
 
-## File Locations
+## Tips
 
-```bash
-# Cheat sheets stored in:
-~/.local/share/chta/sheets/
-
-# Configuration file:
-~/.chta.yaml
-
-# Built-in examples:
-$(chta --install-dir)/examples/
-```
-
-## Pro Tips
-
-1. **Start small**: Begin with commands you use daily
-2. **Use examples**: Include real command examples with explanations  
-3. **Group logically**: Organize commands by functionality
-4. **Keep it current**: Update cheat sheets as you learn new tricks
-5. **Share the love**: Contribute useful cheat sheets back to the community
+- **Start with built-ins**: `git`, `docker`, `chta`
+- **Use dry-run first**: `--dry-run` to preview safely
+- **Markdown format**: Standard code blocks work perfectly
+- **Context matters**: Commands get descriptions from section headings
 
 ---
 
-*Made with ❤️ for developers who are always learning new tools* 
+*Fast like a cheetah, helpful like a cheat sheet* 🚀 

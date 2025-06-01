@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/KoDesigns/chta/internal/display"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/KoDesigns/chta/internal/display"
 )
 
 var cfgFile string
@@ -15,15 +15,14 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "chta",
 	Short: "🐆 Fast CLI cheat sheet tool",
-	Long: `Chta (like Cheetah) is a lightning-fast CLI cheat sheet manager.
+	Long: `Chta (like Cheetah) is a fast CLI cheat sheet manager with interactive command execution.
 
-Easily create, manage, and share command cheat sheets for tools you're learning.
-Perfect for keeping quick references to Git, Docker, FZF, and any other CLI tools.
+Quick reference and command execution - perfect for everyone.
 
 Examples:
-  chta                    # Show interactive cheat sheet browser
-  chta git                # Show Git cheat sheet
-  chta add docker         # Add a new Docker cheat sheet
+  chta git                # View Git cheat sheet
+  chta run git            # Execute Git commands interactively  
+  chta run git --dry-run  # Preview commands safely
   chta list               # List all available cheat sheets`,
 	// Disable the default completion command
 	CompletionOptions: cobra.CompletionOptions{
@@ -82,4 +81,4 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
 	}
-} 
+}
