@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/KoDesigns/chta/internal/display"
 	"github.com/spf13/cobra"
@@ -20,11 +21,12 @@ var rootCmd = &cobra.Command{
 Quick reference and command execution - perfect for everyone.
 
 Examples:
-  chta git                # View Git cheat sheet
+  chta git                # View Git cheat sheet with TOC navigation
+  chta git 3              # Jump directly to section 3 of Git cheat sheet
   chta run git            # Execute Git commands interactively  
   chta run git --dry-run  # Preview commands safely
   chta list               # List all available cheat sheets`,
-	// Allow unknown arguments (cheat sheet names)
+	// Allow unknown arguments (cheat sheet names and section numbers)
 	Args: cobra.ArbitraryArgs,
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		// Auto-complete cheat sheet names
@@ -35,6 +37,10 @@ Examples:
 			}
 			return sheets, cobra.ShellCompDirectiveNoFileComp
 		}
+		// For second argument, suggest section numbers
+		if len(args) == 1 {
+			return []string{"1", "2", "3", "4", "5", "6", "7", "8", "9"}, cobra.ShellCompDirectiveNoFileComp
+		}
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -44,12 +50,29 @@ Examples:
 				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 				os.Exit(1)
 			}
-		} else {
-			// Show specific cheat sheet
-			if err := display.ShowCheatSheet(args[0]); err != nil {
-				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			return
+		}
+
+		// Parse arguments: cheat sheet name and optional section number
+		cheatSheetName := args[0]
+		sectionNumber := 1 // Default to first section
+
+		// Check if second argument is a section number
+		if len(args) >= 2 {
+			if num, err := strconv.Atoi(args[1]); err == nil && num > 0 {
+				sectionNumber = num
+			} else {
+				fmt.Fprintf(os.Stderr, "❌ Invalid section number '%s'. Must be a positive integer.\n", args[1])
+				fmt.Fprintf(os.Stderr, "💡 Usage: chta %s [section_number]\n", cheatSheetName)
+				fmt.Fprintf(os.Stderr, "   Example: chta %s 3\n", cheatSheetName)
 				os.Exit(1)
 			}
+		}
+
+		// Show cheat sheet with TOC navigation
+		if err := display.ShowCheatSheetWithSection(cheatSheetName, sectionNumber); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
 		}
 	},
 }

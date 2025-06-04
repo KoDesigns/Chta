@@ -15,6 +15,9 @@ type CheatSheet struct {
 	Content string
 }
 
+// EmbeddedFS holds the embedded cheat sheets (set by main package)
+var EmbeddedFS fs.FS
+
 // getUserSheetsDir returns the user's cheat sheets directory
 func getUserSheetsDir() (string, error) {
 	homeDir, err := os.UserHomeDir()
@@ -24,7 +27,7 @@ func getUserSheetsDir() (string, error) {
 	return filepath.Join(homeDir, ".chta", "sheets"), nil
 }
 
-// GetCheatSheet reads a cheat sheet by name from user storage or examples directory
+// GetCheatSheet reads a cheat sheet by name from user storage or embedded examples
 func GetCheatSheet(name string) (*CheatSheet, error) {
 	// First check user storage directory
 	if userDir, err := getUserSheetsDir(); err == nil {
@@ -38,7 +41,19 @@ func GetCheatSheet(name string) (*CheatSheet, error) {
 		}
 	}
 
-	// Then check examples directory (built-in cheat sheets)
+	// Then check embedded examples
+	if EmbeddedFS != nil {
+		embeddedPath := filepath.Join("examples", name+".md")
+		if content, err := fs.ReadFile(EmbeddedFS, embeddedPath); err == nil {
+			return &CheatSheet{
+				Name:    name,
+				Path:    embeddedPath,
+				Content: string(content),
+			}, nil
+		}
+	}
+
+	// Fallback: check local examples directory (for development)
 	examplesPath := filepath.Join("examples", name+".md")
 	if _, err := os.Stat("examples"); err == nil {
 		if content, err := os.ReadFile(examplesPath); err == nil {
@@ -182,7 +197,33 @@ func ListCheatSheets() ([]string, error) {
 		}
 	}
 
-	// Then check examples directory
+	// Then check embedded examples
+	if EmbeddedFS != nil {
+		err := fs.WalkDir(EmbeddedFS, "examples", func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if d.IsDir() {
+				return nil
+			}
+
+			if strings.HasSuffix(path, ".md") {
+				name := strings.TrimSuffix(filepath.Base(path), ".md")
+				if !seenSheets[name] {
+					sheets = append(sheets, name)
+					seenSheets[name] = true
+				}
+			}
+
+			return nil
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to list embedded cheat sheets: %w", err)
+		}
+	}
+
+	// Fallback: check local examples directory (for development)
 	if _, err := os.Stat("examples"); err == nil {
 		err := filepath.WalkDir("examples", func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
