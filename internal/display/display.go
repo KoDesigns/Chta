@@ -198,7 +198,7 @@ func ShowInteractiveTOC(name string, sections []Section, currentSection int) err
 			sectionContent = currentSectionData.Content // Fallback to plain text
 		}
 
-		// Display split layout
+		// Display split layout - Content LEFT, TOC RIGHT
 		tocLines := strings.Split(toc, "\n")
 		contentLines := strings.Split(sectionContent, "\n")
 
@@ -208,7 +208,20 @@ func ShowInteractiveTOC(name string, sections []Section, currentSection int) err
 		}
 
 		for i := 0; i < maxLines; i++ {
-			// TOC column (30 chars wide)
+			// Content column (left side - wider)
+			contentLine := ""
+			if i < len(contentLines) {
+				contentLine = contentLines[i]
+			}
+
+			// Truncate content if too wide (leave space for TOC)
+			maxContentWidth := termWidth - 35
+			if len(contentLine) > maxContentWidth {
+				contentLine = contentLine[:maxContentWidth-3] + "..."
+			}
+			contentLine = fmt.Sprintf("%-*s", maxContentWidth, contentLine)
+
+			// TOC column (right side - 30 chars wide)
 			tocLine := ""
 			if i < len(tocLines) {
 				tocLine = tocLines[i]
@@ -218,15 +231,8 @@ func ShowInteractiveTOC(name string, sections []Section, currentSection int) err
 			if len(tocLine) > 30 {
 				tocLine = tocLine[:27] + "..."
 			}
-			tocLine = fmt.Sprintf("%-30s", tocLine)
 
-			// Content column
-			contentLine := ""
-			if i < len(contentLines) {
-				contentLine = contentLines[i]
-			}
-
-			fmt.Printf("%s │ %s\n", tocLine, contentLine)
+			fmt.Printf("%s │ %s\n", contentLine, tocLine)
 		}
 
 		fmt.Println()

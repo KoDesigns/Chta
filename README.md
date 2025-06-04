@@ -1,58 +1,11 @@
-# 🐆 Chta
-> **Fast CLI cheat sheet manager** - View, search, and execute commands interactively
+# 🐆 Chta - Fast CLI Cheat Sheet Tool
 
-[![Go](https://img.shields.io/badge/Go-1.21+-blue.svg)](https://golang.org/)
-[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg)]()
+[![Made with Go](https://img.shields.io/badge/Made%20with-Go-1f425f.svg)](https://go.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/KoDesigns/Chta)](https://github.com/KoDesigns/Chta/issues)
+[![GitHub stars](https://img.shields.io/github/stars/KoDesigns/Chta)](https://github.com/KoDesigns/Chta/stargazers)
 
----
-
-## 🚀 Quick Start
-
-```bash
-# Install
-git clone https://github.com/KoDesigns/chta.git && cd chta
-make install
-
-# Try it out
-chta git                    # 📖 View Git cheat sheet
-chta run git --interactive  # 🔍 Interactive command execution
-```
-
----
-
-## 📋 Command Syntax
-
-### Basic Usage
-```bash
-chta <tool>                 # View cheat sheet with syntax highlighting
-chta list                   # List all available cheat sheets
-chta init                   # Create user cheat sheets directory
-```
-
-### Interactive Execution
-```bash
-chta run <tool>                     # Interactive command selection
-chta run <tool> --interactive       # Real-time fuzzy search
-chta run <tool> -i                  # Short form of interactive
-chta run <tool> --search <keyword>  # Filter by keyword
-chta run <tool> -s <keyword>        # Short form of search
-chta run <tool> --dry-run           # Preview without execution
-```
-
-### Examples
-```bash
-# View cheat sheets
-chta git                    # Display Git commands with beautiful formatting
-chta docker                 # Show Docker commands and examples
-chta chta                   # Learn how to use Chta itself
-
-# Interactive execution modes
-chta run git                # Navigate with n/p, select with 1-9, quit with q
-chta run git -i             # Type to search, ↑↓ to navigate, Enter to select
-chta run git -s commit      # Show only commands containing "commit"
-chta run git --dry-run      # See what commands would run without executing
-```
+**Lightning-fast CLI cheat sheet manager with interactive execution and revolutionary navigation** ⚡
 
 ---
 
@@ -60,237 +13,394 @@ chta run git --dry-run      # See what commands would run without executing
 
 | Feature | Description |
 |---------|-------------|
-| 📖 **Beautiful Display** | Syntax-highlighted markdown rendering |
-| 🚀 **Interactive Execution** | Pick and run commands directly |
-| 🔍 **Fuzzy Search** | Real-time filtering with arrow key navigation |
-| 📝 **Markdown Support** | Simple `.md` files with code block extraction |
-| ⚡ **Lightning Fast** | Instant lookup and execution |
-| 🔧 **Extensible** | Add custom cheat sheets easily |
-| 🌍 **Cross-platform** | Linux, macOS, and Windows support |
+| 🚀 **Interactive TOC Navigation** | Revolutionary split-screen layout with table of contents |
+| ⚡ **Direct Section Access** | Jump to any section with `chta git 3` |
+| 🎮 **Interactive Execution** | Run commands directly from cheat sheets |
+| 📱 **Smart Terminal UI** | Beautiful, responsive terminal interface |
+| 🔍 **Fuzzy Search & Suggestions** | Smart search with typo tolerance |
+| 🏗️ **Built-in Examples** | Comes with curated cheat sheets (Git, Docker, etc.) |
+| 🛠️ **Custom Cheat Sheets** | Create and manage your own cheat sheets |
+| 🌍 **Cross-platform** | Works on Linux, macOS, and Windows |
+| 🎯 **Smart Installation** | Auto-detecting installation with PATH setup |
 
 ---
 
-## 📚 Built-in Cheat Sheets
+## 🚀 Command Syntax
 
+### **Basic Usage**
 ```bash
-chta git        # Git version control commands
-chta docker     # Docker containerization commands  
-chta chta       # Chta usage and examples
+# View cheat sheet with interactive TOC navigation
+chta git
+
+# Jump directly to section 3 (Branching)
+chta git 3
+
+# Jump to section 5 (Remote Operations)  
+chta docker 5
+
+# List all available cheat sheets
+chta list
+```
+
+### **Revolutionary TOC Navigation**
+When you open a cheat sheet, you get a **split-screen interface**:
+
+```
+Section Content                                    │ 📋 Table of Contents
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━│━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+## Branching                                      │   1. Basic Operations
+                                                  │ ▶ 2. Branching
+# List branches                                   │   3. Remote Operations
+git branch                                        │   4. Viewing History
+git branch -a  # Show all branches                │   5. Undoing Changes
+                                                  │ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Create branch                                   │ 🎮 Navigation:
+git checkout -b <name>                            │   [1-5] Jump to section
+                                                  │   [n]ext  [p]rev
+# Switch branches                                 │   [h]elp  [q]uit
+git switch <branch>                               │
+```
+
+**Navigation Controls:**
+- **Numbers (1-9)**: Jump to specific section
+- **n/next**: Go to next section  
+- **p/prev**: Go to previous section
+- **h/help**: Show help
+- **q/quit**: Exit viewer
+
+### **Interactive Execution**
+```bash
+# Run commands interactively with selection menu
+chta run git
+
+# Preview commands without execution (dry-run mode)
+chta run git --dry-run
+
+# Direct execution mode
+chta exec docker
+```
+
+### **Management Commands**
+```bash
+# Initialize user cheat sheets directory
+chta init
+
+# List all available cheat sheets
+chta list
+
+# Show version and build info
+chta --version
 ```
 
 ---
 
-## 🛠️ Create Custom Cheat Sheets
+## 🎯 Quick Examples
 
-### 1. Initialize user directory
+### **⚡ Lightning Navigation**
 ```bash
-chta init                           # Creates ~/.chta/sheets/
+# Traditional way (lots of scrolling)
+chta git  # scroll... scroll... scroll...
+
+# New way (instant access) 🚀
+chta git 4     # Jump directly to "Remote Operations"
+chta docker 2  # Jump to "Container Management"
+chta git 7     # Jump to "Stashing"
 ```
 
-### 2. Create a cheat sheet
+### **🎮 Interactive Workflow**
 ```bash
-# Create file: ~/.chta/sheets/kubernetes.md
-cat > ~/.chta/sheets/kubernetes.md << 'EOF'
-# Kubernetes Commands
+# Open Git cheat sheet → Interactive TOC Navigation
+chta git
 
-## Pod Management
-```bash
-kubectl get pods
-kubectl describe pod <pod-name>
-kubectl logs <pod-name>
-kubectl exec -it <pod-name> -- /bin/bash
+# In the TUI:
+# Press "3" → Jump to Branching section
+# Press "n" → Go to next section  
+# Press "5" → Jump to Remote Operations
+# Press "q" → Exit
 ```
 
-## Service Management
+### **🏃‍♂️ Productivity Boost**
 ```bash
-kubectl get services
-kubectl expose deployment <deployment> --port=80 --target-port=8080
-```
-EOF
-```
+# Before: Search through long docs
+man git | grep branch  # Hope for the best
 
-### 3. Use immediately
-```bash
-chta kubernetes             # View your cheat sheet
-chta run kubernetes -i      # Interactive execution
+# With Chta: Instant, structured access
+chta git 3  # Directly to branching commands
+# See all branch operations in organized format
 ```
-
-### Cheat Sheet Locations
-- **User sheets**: `~/.chta/sheets/*.md` (recommended)
-- **Built-in sheets**: `examples/*.md` (project directory)
-- User sheets override built-ins with same name
 
 ---
 
-## 💻 Installation
+## 🛠️ Installation
 
-### 🎯 Smart Install (Recommended)
+### **🎯 Smart Installation (Recommended)**
 ```bash
-git clone https://github.com/KoDesigns/chta.git && cd chta
-make auto-install       # Automatically chooses best install method
+git clone https://github.com/KoDesigns/Chta.git
+cd Chta
+make auto-install
 ```
 
-### 📦 Installation Options
+### **Alternative Methods**
 
-#### Option 1: System-wide (requires sudo)
+| Method | Command | Use Case |
+|--------|---------|----------|
+| **Local Install** | `make install-local` | User-specific installation |
+| **Global Install** | `make install` | System-wide access |
+| **Force Install** | `make install-force` | Overwrite existing |
+
+### **🔧 Shell Completion**
 ```bash
-make install            # Install to /usr/local/bin (Linux/macOS)
-make install-force      # Force overwrite existing installation
+# Setup auto-completion for your shell
+make completion
 ```
 
-#### Option 2: User directory (no sudo needed)
+---
+
+## 🎮 Interactive Navigation Tutorial
+
+### **Step 1: Open any cheat sheet**
 ```bash
-make install-local      # Install to ~/bin
+chta git
 ```
 
-**⚠️ PATH Setup for User Install:**
-If you see "command not found" after user install, add `~/bin` to your PATH:
+### **Step 2: Explore the split-screen layout**
+- **Left side**: Table of Contents with numbered sections
+- **Right side**: Section content with syntax highlighting
+- **Current section**: Highlighted with ▶ arrow
 
+### **Step 3: Navigate like a pro**
 ```bash
-# For bash users (Linux/macOS)
-echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
+# In the interactive mode:
+3        # Jump to section 3
+n        # Next section
+p        # Previous section  
+h        # Help and tips
+q        # Quit
+```
 
-# For zsh users (macOS default)
+### **Step 4: Direct access for speed**
+```bash
+# Skip the TUI - go directly to what you need
+chta git 5      # Remote operations
+chta docker 3   # Volume management
+chta git 8      # Merge conflicts
+```
+
+---
+
+## 📝 Creating Custom Cheat Sheets
+
+### **Initialize your directory**
+```bash
+chta init
+```
+
+### **Create a new cheat sheet**
+```bash
+# Create markdown file
+echo '# My Tool
+
+## Installation
+```bash
+curl -sSL https://get.mytool.com | sh
+```
+
+## Basic Commands
+```bash
+mytool --help
+mytool status
+mytool deploy
+```' > ~/.chta/sheets/mytool.md
+
+# Use it immediately
+chta mytool     # Interactive TOC view
+chta mytool 2   # Jump to "Basic Commands"
+```
+
+### **Cheat Sheet Structure**
+```markdown
+# Tool Name
+
+## Section 1 Name
+Content here...
+
+## Section 2 Name  
+More content...
+
+## Section N Name
+Final content...
+```
+
+**💡 Pro Tip**: Use `##` (level 2) headers for main sections that appear in the TOC!
+
+---
+
+## 🔧 Make Commands Reference
+
+### **📦 Build Commands**
+```bash
+make build          # Build the binary
+make check-deps     # Check Go installation and dependencies
+```
+
+### **⚡ Installation Commands**
+```bash
+make auto-install   # 🎯 Smart install (recommended)
+make install        # Install globally with sudo
+make install-local  # Install to ~/bin
+make install-force  # Force overwrite existing installation
+make completion     # Setup shell auto-completion
+make uninstall      # Remove chta completely
+```
+
+### **🧪 Development Commands**
+```bash
+make dev ARGS='git' # Run in development mode
+make test           # Run tests
+make test-race      # Run tests with race detection
+make clean          # Remove build artifacts
+```
+
+### **🔍 Troubleshooting Commands**
+```bash
+make diagnose       # Installation diagnostics
+make show-path-help # PATH setup guidance
+```
+
+---
+
+## 🌍 Cross-Platform Support
+
+### **📱 macOS**
+```bash
+# Installation
+make auto-install
+
+# PATH setup (if needed)
 echo 'export PATH="$HOME/bin:$PATH"' >> ~/.zshrc
 source ~/.zshrc
-
-# For fish users
-fish_add_path ~/bin
 ```
 
-#### Option 3: Manual Build
+### **🐧 Linux**
 ```bash
-go build -o chta main.go
-# Then move to desired location:
-sudo mv chta /usr/local/bin/        # Global
-# or
-mv chta ~/bin/                      # User (ensure ~/bin is in PATH)
+# Installation
+make auto-install
+
+# Shell completion
+make completion
 ```
 
-### 🐚 Shell Completion (Optional)
+### **🪟 Windows**
 ```bash
-make completion         # Setup auto-completion for all shells
-# or manual setup:
-chta completion bash > ~/.local/share/bash-completion/completions/chta
-chta completion zsh > ~/.zsh/completions/_chta
-chta completion fish > ~/.config/fish/completions/chta.fish
-```
-
-### 🗑️ Uninstall
-```bash
-make uninstall          # Removes chta and completions completely
-```
-
-### 🔧 Troubleshooting
-
-**Can't find chta command after install:**
-```bash
-# Check if chta is installed
-which chta
-ls -la ~/bin/chta       # For user install
-ls -la /usr/local/bin/chta  # For system install
-
-# Check PATH
-echo $PATH | grep -o ~/bin      # Should show ~/bin for user install
-echo $PATH | grep -o /usr/local/bin  # Should show /usr/local/bin for system install
-
-# Fix PATH (choose your shell)
-echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc    # Bash
-echo 'export PATH="$HOME/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc      # Zsh
-```
-
-**Permission denied:**
-```bash
-# Make sure binary is executable
-chmod +x ~/bin/chta
-# or
-chmod +x /usr/local/bin/chta
-```
-
-### 🪟 Windows Support
-
-**Option 1: Git Bash/WSL (Recommended)**
-```bash
-git clone https://github.com/KoDesigns/chta.git
-cd chta
+# Git Bash / PowerShell
+git clone https://github.com/KoDesigns/Chta.git
+cd Chta
 go build -o chta.exe main.go
-# Move to a directory in PATH, e.g.:
-mv chta.exe /c/Windows/System32/   # (requires admin)
-# or add current directory to PATH
-```
 
-**Option 2: PowerShell**
-```powershell
-git clone https://github.com/KoDesigns/chta.git
-cd chta
-go build -o chta.exe main.go
-# Add to PATH or move to Windows directory
-```
-
-**Windows PATH Setup:**
-1. Search "Environment Variables" in Start Menu
-2. Click "Environment Variables" 
-3. Under "User Variables", select "Path" → Edit
-4. Add the directory containing `chta.exe`
-5. Restart terminal
-
-### 🔍 Verify Installation
-```bash
-chta --version          # Check version
-chta --help            # Show help
-chta git               # Test with built-in cheat sheet
-make help              # Show all available make commands
+# Add to PATH manually or use Windows installer
 ```
 
 ---
 
-## 🎯 Interactive Modes
+## 💡 Pro Tips & Best Practices
 
-### Default Mode
-```
-$ chta run git
-Git Commands - Interactive Mode
-[n]ext [p]rev [1-9] to select [q]uit
+### **🚀 Productivity Hacks**
+```bash
+# Create aliases for frequently used sections
+alias gitbranch="chta git 3"
+alias gitremote="chta git 4"  
+alias dockerrun="chta docker 2"
 
-1. git status
-2. git add .
-3. git commit -m "message"
-...
-
-Select command (1-9): 
+# Quick reference without UI
+chta git 5 | head -20  # First 20 lines of section 5
 ```
 
-### Fuzzy Search Mode
+### **🎯 Speed Navigation**
+- **Learn section numbers**: `chta git` → remember that branching = 3
+- **Use direct access**: `chta git 3` is faster than scrolling
+- **Bookmark workflows**: Know which sections you use most
+- **Combine with shell history**: `!!` + section numbers
+
+### **📚 Organization**
+- **Group related commands** in the same cheat sheet
+- **Use descriptive section names** (## Basic Operations vs ## Ops)
+- **Keep sections focused** - one concept per section
+- **Add examples** in code blocks for clarity
+
+---
+
+## 🐛 Troubleshooting
+
+### **❌ Command not found after installation**
+```bash
+# Run diagnostics
+make diagnose
+
+# Check PATH setup
+echo $PATH
+
+# Manual PATH fix
+export PATH="$HOME/bin:$PATH"  # Linux/macOS
 ```
-$ chta run git -i
-🔍 Search: com_
-> git commit -m "message"
-  git commit --amend
-  git commit --no-verify
-↑↓ navigate | Enter select | Esc quit
+
+### **❌ No cheat sheets available**
+```bash
+# Initialize user directory
+chta init
+
+# Check if cheat sheets are embedded
+chta list
+
+# Verify from any directory
+cd /tmp && chta list
+```
+
+### **❌ Installation issues**
+```bash
+# Check dependencies
+make check-deps
+
+# Force reinstall
+make clean && make install-force
+
+# Get help
+make show-path-help
 ```
 
 ---
 
-## 🔧 Requirements
+## 🤝 Contributing
 
-- **Go**: 1.21 or higher
-- **OS**: Linux, macOS, Windows
-- **Terminal**: Any modern terminal with color support
+We welcome contributions! Here's how to get started:
+
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+3. **Make your changes** following Go best practices
+4. **Add tests** for new functionality
+5. **Submit a pull request**
+
+### **Development Setup**
+```bash
+git clone https://github.com/KoDesigns/Chta.git
+cd Chta
+go mod tidy
+make dev ARGS='git'  # Test your changes
+```
 
 ---
 
 ## 📄 License
 
-[Apache 2.0](LICENSE)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-<div align="center">
+## 🌟 Star History
 
-**Made with ❤️ for developers who value speed and simplicity**
+If you find Chta useful, please give it a star! ⭐
 
-[⭐ Star on GitHub](https://github.com/KoDesigns/chta) | [🐛 Report Issues](https://github.com/KoDesigns/chta/issues) | [💡 Request Features](https://github.com/KoDesigns/chta/issues/new)
+---
 
-</div> 
+**Made with ❤️ for developers who value speed and productivity**
+
+*Happy coding! 🚀* 
