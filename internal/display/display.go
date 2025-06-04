@@ -151,20 +151,38 @@ func ListCheatSheets() error {
 
 // ShowWelcome displays the welcome message with available cheat sheets
 func ShowWelcome() error {
+	// Show welcome with list of available cheat sheets
+	sheets, err := storage.ListCheatSheets()
+	if err != nil {
+		return fmt.Errorf("failed to list cheat sheets: %w", err)
+	}
+
 	fmt.Println("🐆 Welcome to Chta - Fast CLI Cheat Sheet Tool")
 	fmt.Println()
 
-	sheets, err := storage.ListCheatSheets()
-	if err == nil && len(sheets) > 0 {
-		fmt.Println("Available cheat sheets:")
-		for _, sheet := range sheets {
-			fmt.Printf("  chta %s\n", sheet)
-		}
-		fmt.Println()
+	if len(sheets) == 0 {
+		fmt.Println("📋 No cheat sheets found")
+		fmt.Println("💡 Try: chta init  # to create user directory")
+		return nil
 	}
 
-	fmt.Println("Run 'chta --help' for more commands")
-	fmt.Println("Run 'chta chta' to see how to use Chta itself!")
+	fmt.Println("📋 Available cheat sheets:")
+	for _, sheet := range sheets {
+		fmt.Printf("  • %s\n", sheet)
+	}
+
+	fmt.Println()
+	fmt.Println("💡 Usage:")
+	fmt.Println("  chta <name>           # View cheat sheet")
+	fmt.Println("  chta run <name>       # Interactive execution")
+	fmt.Println("  chta run <name> -i    # Fuzzy search mode")
+	fmt.Println("  chta list             # List all sheets")
+	fmt.Println("  chta init             # Setup user directory")
 
 	return nil
+}
+
+// GetAvailableSheets returns list of available cheat sheets for shell completion
+func GetAvailableSheets() ([]string, error) {
+	return storage.ListCheatSheets()
 }

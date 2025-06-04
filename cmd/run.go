@@ -36,6 +36,14 @@ Examples:
   chta run git --interactive       # Real-time fuzzy search with arrow keys
   chta run git -i                  # Short form of interactive search`,
 	Args: cobra.ExactArgs(1),
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		// Auto-complete cheat sheet names for run command
+		sheets, err := getRunCompletionSheets()
+		if err != nil {
+			return nil, cobra.ShellCompDirectiveError
+		}
+		return sheets, cobra.ShellCompDirectiveNoFileComp
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		toolName := args[0]
 		dryRun, _ := cmd.Flags().GetBool("dry-run")
@@ -54,6 +62,12 @@ Examples:
 			}
 		}
 	},
+}
+
+// getRunCompletionSheets returns available sheets for completion (same as main function)
+func getRunCompletionSheets() ([]string, error) {
+	// Use the storage package directly to avoid import cycles
+	return storage.ListCheatSheets()
 }
 
 func init() {
@@ -88,54 +102,79 @@ func runInteractiveCommands(toolName string, dryRun bool, searchTerm string) err
 
 	// Display the commands with numbers (with pagination)
 	titleCaser := cases.Title(language.Und)
-	fmt.Printf("🐆 Interactive %s Commands\n", titleCaser.String(toolName))
-	fmt.Println(strings.Repeat("─", 50))
-	fmt.Println()
 
 	if dryRun {
 		// In dry-run mode, show all commands without pagination
+		fmt.Printf("🐆 %s Commands (Dry Run Mode)\n", titleCaser.String(toolName))
+		fmt.Println(strings.Repeat("═", 60))
+		fmt.Println()
+
 		for i, cmd := range commands {
-			fmt.Printf("%2d. %s\n", i+1, cmd.Description)
+			fmt.Printf("📋 %2d. %s\n", i+1, cmd.Description)
 			fmt.Printf("    💻 %s\n", cmd.Command)
 			fmt.Println()
 		}
 		fmt.Println("🔍 Dry run mode - commands shown but not executed")
+		fmt.Printf("💡 Run without --dry-run to execute: chta run %s\n", toolName)
 		return nil
 	}
 
-	// Interactive mode with pagination
-	const pageSize = 10
+	// Interactive mode with enhanced pagination
+	const pageSize = 8 // Reduced for better visibility
 	totalPages := (len(commands) + pageSize - 1) / pageSize
 	currentPage := 0
 
 	for {
-		// Display current page
+		// Clear screen and show header
+		fmt.Print("\033[2J\033[H") // Clear screen and move to top
+
+		// Enhanced header
+		fmt.Printf("🐆 %s Commands - Interactive Mode\n", titleCaser.String(toolName))
+		fmt.Println(strings.Repeat("═", 60))
+
+		// Display current page info
 		start := currentPage * pageSize
 		end := start + pageSize
 		if end > len(commands) {
 			end = len(commands)
 		}
 
-		fmt.Printf("📄 Page %d of %d (%d-%d of %d commands)\n\n",
+		if searchTerm != "" {
+			fmt.Printf("🔍 Filtered by: \"%s\" | ", searchTerm)
+		}
+		fmt.Printf("📄 Page %d/%d | Commands %d-%d of %d\n\n",
 			currentPage+1, totalPages, start+1, end, len(commands))
 
+		// Display commands with enhanced formatting
 		for i := start; i < end; i++ {
-			fmt.Printf("%2d. %s\n", i+1, commands[i].Description)
+			fmt.Printf("📋 %2d. %s\n", i+1, commands[i].Description)
 			fmt.Printf("    💻 %s\n", commands[i].Command)
-			fmt.Println()
+			if i < end-1 {
+				fmt.Println()
+			}
 		}
 
-		// Show navigation options
-		fmt.Println("Navigation:")
+		fmt.Println()
+		fmt.Println(strings.Repeat("─", 60))
+
+		// Enhanced navigation menu
+		fmt.Println("🎮 Navigation & Actions:")
+		fmt.Printf("  ")
+
 		if currentPage > 0 {
-			fmt.Println("  p/prev - Previous page")
+			fmt.Printf("⬅️  [p]rev  ")
 		}
 		if currentPage < totalPages-1 {
-			fmt.Println("  n/next - Next page")
+			fmt.Printf("➡️  [n]ext  ")
 		}
-		fmt.Println("  1-" + strconv.Itoa(len(commands)) + " - Select command number")
-		fmt.Println("  q/quit - Quit")
-		fmt.Print("\nEnter selection: ")
+
+		fmt.Printf("🎯 [1-%d] select  ❓ [h]elp  🚪 [q]uit", len(commands))
+
+		if !dryRun {
+			fmt.Printf("  🔍 [/] search")
+		}
+		fmt.Println()
+		fmt.Print("\n⚡ Enter choice: ")
 
 		reader := bufio.NewReader(os.Stdin)
 		input, err := reader.ReadString('\n')
@@ -145,33 +184,49 @@ func runInteractiveCommands(toolName string, dryRun bool, searchTerm string) err
 
 		input = strings.TrimSpace(strings.ToLower(input))
 
-		// Handle navigation
+		// Handle special commands
 		switch input {
-		case "q", "quit":
-			fmt.Println("👋 Goodbye!")
+		case "q", "quit", "exit":
+			fmt.Print("\033[2J\033[H") // Clear screen
+			fmt.Println("👋 Goodbye! Thanks for using Chta!")
 			return nil
+
+		case "h", "help", "?":
+			showInteractiveHelp()
+			fmt.Print("\nPress Enter to continue...")
+			reader.ReadString('\n')
+			continue
+
+		case "/", "search":
+			if !dryRun {
+				fmt.Print("🔍 Enter search term: ")
+				searchInput, _ := reader.ReadString('\n')
+				searchInput = strings.TrimSpace(searchInput)
+				if searchInput != "" {
+					return runInteractiveCommands(toolName, dryRun, searchInput)
+				}
+			}
+			continue
+
 		case "n", "next":
 			if currentPage < totalPages-1 {
 				currentPage++
-				fmt.Print("\033[2J\033[H") // Clear screen
-				fmt.Printf("🐆 Interactive %s Commands\n", titleCaser.String(toolName))
-				fmt.Println(strings.Repeat("─", 50))
-				fmt.Println()
 				continue
 			} else {
 				fmt.Println("❌ Already at last page")
+				fmt.Print("Press Enter to continue...")
+				reader.ReadString('\n')
 				continue
 			}
-		case "p", "prev":
+
+		case "p", "prev", "previous":
 			if currentPage > 0 {
 				currentPage--
-				fmt.Print("\033[2J\033[H") // Clear screen
-				fmt.Printf("🐆 Interactive %s Commands\n", titleCaser.String(toolName))
-				fmt.Println(strings.Repeat("─", 50))
-				fmt.Println()
 				continue
 			} else {
 				fmt.Println("❌ Already at first page")
+				fmt.Print("Press Enter to continue...")
+				reader.ReadString('\n')
 				continue
 			}
 		}
@@ -179,15 +234,22 @@ func runInteractiveCommands(toolName string, dryRun bool, searchTerm string) err
 		// Try to parse as command number
 		selection, err := strconv.Atoi(input)
 		if err != nil || selection < 1 || selection > len(commands) {
-			fmt.Printf("❌ Invalid selection. Enter 1-%d, n/p for navigation, or q to quit\n\n", len(commands))
+			fmt.Printf("❌ Invalid selection '%s'. Try 1-%d, n/p, h for help, or q to quit\n", input, len(commands))
+			fmt.Print("Press Enter to continue...")
+			reader.ReadString('\n')
 			continue
 		}
 
 		selectedCmd := commands[selection-1]
 
-		// Confirm execution for safety
-		fmt.Printf("🔄 About to run: %s\n", selectedCmd.Command)
-		fmt.Print("Continue? (y/N): ")
+		// Enhanced confirmation with command preview
+		fmt.Print("\033[2J\033[H") // Clear screen
+		fmt.Println("🚀 Ready to Execute Command")
+		fmt.Println(strings.Repeat("═", 60))
+		fmt.Printf("📋 Description: %s\n", selectedCmd.Description)
+		fmt.Printf("💻 Command:     %s\n", selectedCmd.Command)
+		fmt.Println(strings.Repeat("─", 60))
+		fmt.Print("⚠️  Execute this command? [y]es/[n]o/[e]dit: ")
 
 		confirm, err := reader.ReadString('\n')
 		if err != nil {
@@ -195,17 +257,61 @@ func runInteractiveCommands(toolName string, dryRun bool, searchTerm string) err
 		}
 
 		confirm = strings.ToLower(strings.TrimSpace(confirm))
-		if confirm != "y" && confirm != "yes" {
+		switch confirm {
+		case "y", "yes":
+			// Execute the command
+			fmt.Printf("\n🚀 Executing: %s\n", selectedCmd.Command)
+			fmt.Println(strings.Repeat("═", 60))
+			return executeCommand(selectedCmd.Command)
+
+		case "e", "edit":
+			fmt.Print("✏️  Edit command: ")
+			editedCmd, _ := reader.ReadString('\n')
+			editedCmd = strings.TrimSpace(editedCmd)
+			if editedCmd != "" {
+				fmt.Printf("\n🚀 Executing: %s\n", editedCmd)
+				fmt.Println(strings.Repeat("═", 60))
+				return executeCommand(editedCmd)
+			}
+			fmt.Println("❌ Command cancelled (empty input)")
+			return nil
+
+		default:
 			fmt.Println("❌ Command cancelled")
 			return nil
 		}
-
-		// Execute the command
-		fmt.Printf("🚀 Executing: %s\n", selectedCmd.Command)
-		fmt.Println(strings.Repeat("─", 50))
-
-		return executeCommand(selectedCmd.Command)
 	}
+}
+
+// showInteractiveHelp displays help information in the interactive mode
+func showInteractiveHelp() {
+	fmt.Print("\033[2J\033[H") // Clear screen
+	fmt.Println("❓ Chta Interactive Mode Help")
+	fmt.Println(strings.Repeat("═", 60))
+	fmt.Println()
+	fmt.Println("🎮 Navigation:")
+	fmt.Println("  n, next     - Go to next page")
+	fmt.Println("  p, prev     - Go to previous page")
+	fmt.Println("  1-9         - Select command by number")
+	fmt.Println("  /, search   - Filter commands by keyword")
+	fmt.Println("  h, help, ?  - Show this help")
+	fmt.Println("  q, quit     - Exit interactive mode")
+	fmt.Println()
+	fmt.Println("⚡ Execution:")
+	fmt.Println("  When selecting a command:")
+	fmt.Println("  y, yes      - Execute the command")
+	fmt.Println("  n, no       - Cancel execution")
+	fmt.Println("  e, edit     - Edit command before execution")
+	fmt.Println()
+	fmt.Println("💡 Tips:")
+	fmt.Println("  • Use --dry-run flag to preview commands safely")
+	fmt.Println("  • Use -i flag for real-time fuzzy search")
+	fmt.Println("  • Commands are extracted from markdown code blocks")
+	fmt.Println("  • You can edit commands before executing them")
+	fmt.Println()
+	fmt.Println("🔍 Fuzzy Search Mode (chta run <tool> -i):")
+	fmt.Println("  Type to filter commands in real-time")
+	fmt.Println("  ↑↓ arrows to navigate, Enter to select, Esc to quit")
 }
 
 // runInteractiveSearch provides a real-time fuzzy search interface
@@ -223,9 +329,6 @@ func runInteractiveSearch(toolName string, dryRun bool) error {
 	}
 
 	titleCaser := cases.Title(language.Und)
-	fmt.Printf("🔍 Interactive Search for %s Commands\n", titleCaser.String(toolName))
-	fmt.Println("Type to filter, ↑↓ to navigate, Enter to select, Esc to quit")
-	fmt.Println(strings.Repeat("─", 60))
 
 	// Interactive search state
 	searchQuery := ""
@@ -239,20 +342,30 @@ func runInteractiveSearch(toolName string, dryRun bool) error {
 	}
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
+	// Show initial help
+	fmt.Print("\033[2J\033[H") // Clear screen
+	fmt.Printf("🔍 Interactive Search for %s Commands\n", titleCaser.String(toolName))
+	fmt.Println(strings.Repeat("═", 60))
+	fmt.Println("💡 Tips: Type to filter | ↑↓ navigate | Enter select | Esc quit | ? help")
+	fmt.Println(strings.Repeat("─", 60))
+
 	for {
 		// Clear screen and show interface
 		fmt.Print("\033[2J\033[H") // Clear screen
 
 		fmt.Printf("🔍 Interactive Search for %s Commands\n", titleCaser.String(toolName))
-		fmt.Println("Type to filter, ↑↓ to navigate, Enter to select, Esc to quit")
-		fmt.Println(strings.Repeat("─", 60))
-		fmt.Printf("Search: %s_\n\n", searchQuery)
+		fmt.Println(strings.Repeat("═", 60))
+
+		// Show search input with cursor
+		fmt.Printf("🔍 Search: %s█\n", searchQuery)
+		fmt.Println()
 
 		// Filter commands based on search query
 		filteredCommands = fuzzyFilterCommands(allCommands, searchQuery)
 
 		if len(filteredCommands) == 0 {
 			fmt.Printf("❌ No commands match '%s'\n", searchQuery)
+			fmt.Println("💡 Try a different search term or press Esc to quit")
 		} else {
 			// Ensure selected index is valid
 			if selectedIndex >= len(filteredCommands) {
@@ -263,45 +376,77 @@ func runInteractiveSearch(toolName string, dryRun bool) error {
 			}
 
 			// Display filtered commands with selection highlight
-			const maxDisplay = 10
+			const maxDisplay = 8
 			displayCount := len(filteredCommands)
 			if displayCount > maxDisplay {
 				displayCount = maxDisplay
 			}
 
+			fmt.Printf("📊 Showing %d of %d matches\n\n", displayCount, len(filteredCommands))
+
 			for i := 0; i < displayCount; i++ {
 				cmd := filteredCommands[i]
-				prefix := "  "
+
 				if i == selectedIndex {
-					prefix = "▶ " // Highlight selected
+					// Highlight selected item with background color
+					fmt.Printf("\033[7m▶ %d. %s\033[0m\n", i+1, cmd.Description)
+					fmt.Printf("\033[7m    💻 %s\033[0m\n", cmd.Command)
+				} else {
+					fmt.Printf("  %d. %s\n", i+1, cmd.Description)
+					fmt.Printf("    💻 %s\n", cmd.Command)
 				}
 
-				fmt.Printf("%s%d. %s\n", prefix, i+1, cmd.Description)
-				fmt.Printf("    💻 %s\n", cmd.Command)
 				if i < displayCount-1 {
 					fmt.Println()
 				}
 			}
 
 			if len(filteredCommands) > maxDisplay {
-				fmt.Printf("\n... and %d more commands\n", len(filteredCommands)-maxDisplay)
+				fmt.Printf("\n... and %d more commands (type more to filter)\n", len(filteredCommands)-maxDisplay)
 			}
 		}
 
-		// Read single character
-		buf := make([]byte, 1)
-		n, err := os.Stdin.Read(buf)
+		fmt.Println()
+		fmt.Println(strings.Repeat("─", 60))
+		fmt.Println("💡 ↑↓ navigate | Enter select | Backspace delete | ? help | Esc quit")
+
+		// Read input - handle escape sequences properly
+		input := make([]byte, 4)
+		n, err := os.Stdin.Read(input)
 		if err != nil || n == 0 {
 			continue
 		}
 
-		char := buf[0]
+		// Handle escape sequences (arrow keys)
+		if n >= 3 && input[0] == 27 && input[1] == 91 { // ESC[
+			switch input[2] {
+			case 65: // Up arrow
+				if selectedIndex > 0 {
+					selectedIndex--
+				}
+				continue
+			case 66: // Down arrow
+				if selectedIndex < len(filteredCommands)-1 {
+					selectedIndex++
+				}
+				continue
+			case 67: // Right arrow - could be used for command preview
+				continue
+			case 68: // Left arrow
+				continue
+			}
+		}
+
+		// Handle single character input
+		char := input[0]
 
 		switch char {
-		case 27: // ESC key
-			fmt.Print("\033[2J\033[H") // Clear screen
-			fmt.Println("👋 Search cancelled!")
-			return nil
+		case 27: // ESC key (when not part of arrow sequence)
+			if n == 1 { // Pure ESC, not part of sequence
+				fmt.Print("\033[2J\033[H") // Clear screen
+				fmt.Println("👋 Search cancelled!")
+				return nil
+			}
 
 		case 13: // Enter key
 			if len(filteredCommands) > 0 && selectedIndex < len(filteredCommands) {
@@ -311,16 +456,20 @@ func runInteractiveSearch(toolName string, dryRun bool) error {
 				term.Restore(int(os.Stdin.Fd()), oldState)
 
 				fmt.Print("\033[2J\033[H") // Clear screen
-				fmt.Printf("🚀 Selected: %s\n", selectedCmd.Description)
-				fmt.Printf("Command: %s\n", selectedCmd.Command)
+				fmt.Println("🚀 Selected Command")
+				fmt.Println(strings.Repeat("═", 60))
+				fmt.Printf("📋 Description: %s\n", selectedCmd.Description)
+				fmt.Printf("💻 Command:     %s\n", selectedCmd.Command)
+				fmt.Println(strings.Repeat("─", 60))
 
 				if dryRun {
 					fmt.Println("🔍 Dry run mode - command not executed")
+					fmt.Printf("💡 Run without --dry-run to execute: chta run %s\n", toolName)
 					return nil
 				}
 
-				// Confirm execution
-				fmt.Print("Execute this command? (y/N): ")
+				// Enhanced confirmation
+				fmt.Print("⚠️  Execute this command? [y]es/[n]o/[e]dit: ")
 				reader := bufio.NewReader(os.Stdin)
 				confirm, err := reader.ReadString('\n')
 				if err != nil {
@@ -328,28 +477,41 @@ func runInteractiveSearch(toolName string, dryRun bool) error {
 				}
 
 				confirm = strings.ToLower(strings.TrimSpace(confirm))
-				if confirm == "y" || confirm == "yes" {
+				switch confirm {
+				case "y", "yes":
+					fmt.Printf("\n🚀 Executing: %s\n", selectedCmd.Command)
+					fmt.Println(strings.Repeat("═", 60))
 					return executeCommand(selectedCmd.Command)
-				} else {
+				case "e", "edit":
+					fmt.Print("✏️  Edit command: ")
+					editedCmd, _ := reader.ReadString('\n')
+					editedCmd = strings.TrimSpace(editedCmd)
+					if editedCmd != "" {
+						fmt.Printf("\n🚀 Executing: %s\n", editedCmd)
+						fmt.Println(strings.Repeat("═", 60))
+						return executeCommand(editedCmd)
+					}
+					fmt.Println("❌ Command cancelled (empty input)")
+					return nil
+				default:
 					fmt.Println("❌ Command cancelled")
 					return nil
 				}
-			}
-
-		case 65: // Up arrow (actually part of escape sequence, simplified)
-			if selectedIndex > 0 {
-				selectedIndex--
-			}
-
-		case 66: // Down arrow (simplified)
-			if selectedIndex < len(filteredCommands)-1 {
-				selectedIndex++
 			}
 
 		case 127, 8: // Backspace/Delete
 			if len(searchQuery) > 0 {
 				searchQuery = searchQuery[:len(searchQuery)-1]
 				selectedIndex = 0 // Reset selection
+			}
+
+		case 63: // ? - help
+			showSearchHelp(titleCaser.String(toolName))
+			continue
+
+		case 9: // Tab - could cycle through matches
+			if len(filteredCommands) > 1 {
+				selectedIndex = (selectedIndex + 1) % len(filteredCommands)
 			}
 
 		default:
@@ -360,6 +522,39 @@ func runInteractiveSearch(toolName string, dryRun bool) error {
 			}
 		}
 	}
+}
+
+// showSearchHelp displays help for the interactive search mode
+func showSearchHelp(toolName string) {
+	fmt.Print("\033[2J\033[H") // Clear screen
+	fmt.Printf("❓ Interactive Search Help - %s\n", toolName)
+	fmt.Println(strings.Repeat("═", 60))
+	fmt.Println()
+	fmt.Println("🔍 Search Mode:")
+	fmt.Println("  Type         - Filter commands in real-time")
+	fmt.Println("  Backspace    - Delete last character")
+	fmt.Println("  ↑↓ arrows    - Navigate through filtered results")
+	fmt.Println("  Tab          - Cycle through matches")
+	fmt.Println("  Enter        - Select highlighted command")
+	fmt.Println("  Esc          - Exit search mode")
+	fmt.Println("  ?            - Show this help")
+	fmt.Println()
+	fmt.Println("⚡ Command Execution:")
+	fmt.Println("  y, yes       - Execute the selected command")
+	fmt.Println("  n, no        - Cancel execution")
+	fmt.Println("  e, edit      - Edit command before execution")
+	fmt.Println()
+	fmt.Println("💡 Tips:")
+	fmt.Println("  • Search is fuzzy - partial matches work")
+	fmt.Println("  • Search both command and description")
+	fmt.Println("  • Selected command is highlighted with ▶")
+	fmt.Println("  • Use --dry-run to preview without execution")
+	fmt.Println()
+	fmt.Print("Press any key to continue...")
+
+	// Wait for any key press
+	input := make([]byte, 1)
+	os.Stdin.Read(input)
 }
 
 // Command represents an executable command with description

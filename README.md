@@ -124,24 +124,123 @@ chta run kubernetes -i      # Interactive execution
 
 ## 💻 Installation
 
-### Option 1: Makefile (Recommended)
+### 🎯 Smart Install (Recommended)
+```bash
+git clone https://github.com/KoDesigns/chta.git && cd chta
+make auto-install       # Automatically chooses best install method
+```
+
+### 📦 Installation Options
+
+#### Option 1: System-wide (requires sudo)
+```bash
+make install            # Install to /usr/local/bin (Linux/macOS)
+make install-force      # Force overwrite existing installation
+```
+
+#### Option 2: User directory (no sudo needed)
+```bash
+make install-local      # Install to ~/bin
+```
+
+**⚠️ PATH Setup for User Install:**
+If you see "command not found" after user install, add `~/bin` to your PATH:
+
+```bash
+# For bash users (Linux/macOS)
+echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+
+# For zsh users (macOS default)
+echo 'export PATH="$HOME/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# For fish users
+fish_add_path ~/bin
+```
+
+#### Option 3: Manual Build
+```bash
+go build -o chta main.go
+# Then move to desired location:
+sudo mv chta /usr/local/bin/        # Global
+# or
+mv chta ~/bin/                      # User (ensure ~/bin is in PATH)
+```
+
+### 🐚 Shell Completion (Optional)
+```bash
+make completion         # Setup auto-completion for all shells
+# or manual setup:
+chta completion bash > ~/.local/share/bash-completion/completions/chta
+chta completion zsh > ~/.zsh/completions/_chta
+chta completion fish > ~/.config/fish/completions/chta.fish
+```
+
+### 🗑️ Uninstall
+```bash
+make uninstall          # Removes chta and completions completely
+```
+
+### 🔧 Troubleshooting
+
+**Can't find chta command after install:**
+```bash
+# Check if chta is installed
+which chta
+ls -la ~/bin/chta       # For user install
+ls -la /usr/local/bin/chta  # For system install
+
+# Check PATH
+echo $PATH | grep -o ~/bin      # Should show ~/bin for user install
+echo $PATH | grep -o /usr/local/bin  # Should show /usr/local/bin for system install
+
+# Fix PATH (choose your shell)
+echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc && source ~/.bashrc    # Bash
+echo 'export PATH="$HOME/bin:$PATH"' >> ~/.zshrc && source ~/.zshrc      # Zsh
+```
+
+**Permission denied:**
+```bash
+# Make sure binary is executable
+chmod +x ~/bin/chta
+# or
+chmod +x /usr/local/bin/chta
+```
+
+### 🪟 Windows Support
+
+**Option 1: Git Bash/WSL (Recommended)**
 ```bash
 git clone https://github.com/KoDesigns/chta.git
 cd chta
-make install        # System-wide (/usr/local/bin)
-# or
-make install-user   # User directory (~/bin)
+go build -o chta.exe main.go
+# Move to a directory in PATH, e.g.:
+mv chta.exe /c/Windows/System32/   # (requires admin)
+# or add current directory to PATH
 ```
 
-### Option 2: Manual Build  
-```bash
-go build -o chta main.go
-sudo mv chta /usr/local/bin/
+**Option 2: PowerShell**
+```powershell
+git clone https://github.com/KoDesigns/chta.git
+cd chta
+go build -o chta.exe main.go
+# Add to PATH or move to Windows directory
 ```
 
-### Option 3: Development
+**Windows PATH Setup:**
+1. Search "Environment Variables" in Start Menu
+2. Click "Environment Variables" 
+3. Under "User Variables", select "Path" → Edit
+4. Add the directory containing `chta.exe`
+5. Restart terminal
+
+### 🔍 Verify Installation
 ```bash
-go run main.go git  # Test locally
+chta --version          # Check version
+chta --help            # Show help
+chta git               # Test with built-in cheat sheet
+make help              # Show all available make commands
 ```
 
 ---
